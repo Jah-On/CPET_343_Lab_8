@@ -62,7 +62,7 @@ BEGIN
 		address_aclr_a => "NONE",
 		clock_enable_input_a => "BYPASS",
 		clock_enable_output_a => "BYPASS",
-		init_file => "/home/jah-on/Documents/RIT/Summer_2025/HDL/Labs/Lab_8/src/rom/rom.mif",
+		init_file => "src/rom/rom.mif",
 		intended_device_family => "Cyclone V",
 		lpm_hint => "ENABLE_RUNTIME_MOD=YES,INSTANCE_NAME=ROM",
 		lpm_type => "altsyncram",

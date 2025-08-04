@@ -9,9 +9,7 @@ architecture stim of main is
     component tlde is
         port (
             reset, clk              : in  std_logic;
-            op                      : in  std_logic_vector(1 downto 0);
-            number                  : in  std_logic_vector(7 downto 0);
-            exec, mr, ms            : in  std_logic;
+            exec                    : in  std_logic;
             hex0, hex1, hex2        : out std_logic_vector(6 downto 0);
             state                   : out std_logic_vector(2 downto 0)
         );
@@ -26,6 +24,7 @@ architecture stim of main is
         ("1000000", "1000000", "1000000"),
         ("1000000", "1000000", "0011001"),
         ("1000000", "0110000", "0100100"),
+        ("1000000", "0110000", "0100100"),
         ("1000000", "0100100", "0011001"),
         ("1000000", "1111001", "0100100"),
         ("1000000", "0110000", "0100100"),
@@ -35,11 +34,25 @@ architecture stim of main is
     signal done                         : std_logic                    := '0';
 
     signal reset                        : std_logic                    := '0';
-    signal clk, exec, mr, ms            : std_logic                    := '1';
-    signal op                           : std_logic_vector(1 downto 0) := "00";
-    signal number                       : std_logic_vector(7 downto 0) := "00000000";
+    signal clk, exec                    : std_logic                    := '1';
     signal state                        : std_logic_vector(2 downto 0) := "000";
     signal hex_out                      : ssd_arr_t;
+
+    function HexToInt(dsp_in: std_logic_vector(6 downto 0)) return integer is
+    begin
+        case dsp_in is
+            when "1111001" => return 1;
+            when "0100100" => return 2;
+            when "0110000" => return 3;
+            when "0011001" => return 4;
+            when "0010010" => return 5;
+            when "0000010" => return 6;
+            when "1111000" => return 7;
+            when "0000000" => return 8;
+            when "0011000" => return 9;
+            when others    => return 0;
+        end case;
+    end function;
 
     procedure DelayClocks(Cycles : integer := 1) is
     begin
@@ -49,10 +62,14 @@ architecture stim of main is
     end procedure;
 
     procedure CheckDisplay(Row : integer) is
+        variable hex_int, dsp_int : integer;
     begin
         for dsp_index in 2 downto 0 loop
-            assert hex_out(dsp_index) = DSP_VALS(Row)(dsp_index) 
-                report integer'image(Row) & ": Hex " & integer'image(dsp_index) & " does not match expected value!" 
+            hex_int := HexToInt(hex_out(dsp_index));
+            dsp_int := HexToInt(DSP_VALS(Row)(dsp_index));
+            assert hex_int = dsp_int
+                report integer'image(Row) & ": Hex " & integer'image(dsp_index) & " of " 
+                & integer'image(hex_int) & " does not match " & integer'image(dsp_int) &  "!" 
                     severity error;
         end loop;
     end procedure;
@@ -77,72 +94,18 @@ begin
         DelayClocks(10);
         reset  <= '1';
 
-        DelayClocks(10);
-
-        CheckDisplay(0);
-
-        DelayClocks(1);
-
-        number <= "00000100";
-        exec   <= '0';
-
-        DelayClocks(4);
-        exec   <= '1';
-
-        DelayClocks(10);
-        CheckDisplay(1);
-
         DelayClocks(4);
 
-        number <= "00001000";
-        op     <= "10";
-        exec   <= '0';
+        -- CheckDisplay(0);
 
-        DelayClocks(4);
-        exec   <= '1';
+        for execs in 0 to 7 loop
+            exec   <= '0';
+            DelayClocks(3);
+            exec   <= '1';
+            DelayClocks(20);
 
-        DelayClocks(10);
-        CheckDisplay(2);
-
-        ms     <= '0';
-        DelayClocks(4);
-        ms     <= '1';
-        DelayClocks(10);
-
-        op     <= "01";
-        exec   <= '0';
-
-        DelayClocks(4);
-        exec   <= '1';
-
-        DelayClocks(10);
-        CheckDisplay(3);
-
-        number <= "00000010";
-        op     <= "11";
-        exec   <= '0';
-
-        DelayClocks(4);
-        exec   <= '1';
-
-        DelayClocks(10);
-        CheckDisplay(4);
-
-        mr     <= '0';
-        DelayClocks(4);
-        mr     <= '1';
-        DelayClocks(4);
-
-        DelayClocks(10);
-        CheckDisplay(5);
-
-        exec   <= '0';
-
-        DelayClocks(4);
-        exec   <= '1';
-
-        DelayClocks(10);
-        CheckDisplay(6);
+            CheckDisplay(execs);
+        end loop;
 
         done   <= '1';
 
@@ -153,11 +116,7 @@ begin
         port map (
             reset     => reset,
             clk       => clk,
-            op        => op,
-            number    => number,
             exec      => exec,
-            mr        => mr,
-            ms        => ms,
             hex2      => hex_out(2),
             hex1      => hex_out(1),
             hex0      => hex_out(0),

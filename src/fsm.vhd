@@ -38,12 +38,14 @@ begin
         elsif rising_edge(clk) then
             case current_state is
                 when IDLE            =>
-                    if    (mr   = '1') then
-                        next_state <= MR_ADDRESS_SAVE;
-                    elsif (exec = '1') then
-                        next_state <= DATA_ALU;
-                    elsif (ms = '1') then
-                        next_state <= MS_DATA_MEMORY;
+                    if    (exec = '1') then
+                        if (mr   = '1') then
+                            next_state <= MR_ADDRESS_SAVE;
+                        elsif (ms = '1') then
+                            next_state <= MS_DATA_MEMORY;
+                        else
+                            next_state <= DATA_ALU;
+                        end if;
                     end if;
 
                 -- MR path

@@ -26,10 +26,6 @@ radix define States {
 add wave                 -noupdate /main/clk
 add wave                 -noupdate /main/reset
 add wave                 -noupdate /main/exec
-add wave                 -noupdate /main/mr
-add wave                 -noupdate /main/ms
-add wave -radix unsigned -noupdate /main/number
-add wave -radix binary   -noupdate /main/op
 add wave -radix States   -noupdate /main/hex_out(2)
 add wave -radix States   -noupdate /main/hex_out(1)
 add wave -radix States   -noupdate /main/hex_out(0)
@@ -53,4 +49,4 @@ configure wave -timeline 0
 configure wave -timelineunits ns
 update
 WaveRestoreZoom {101 ns} {206 ns}
-run 4000 ns
+run 5000 ns
